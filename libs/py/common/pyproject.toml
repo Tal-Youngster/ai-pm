@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "ai-pm-common"
+version = "0.1.0"
+description = "Shared Pydantic models and utilities for ai-pm services"
+authors = ["ai-pm Platform <dev@example.com>"]
+packages = [
+  { include = "ai_pm_common" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pydantic = "^2.6.0"
+
+[build-system]
+requires = ["poetry-core>=1.6.0"]
+build-backend = "poetry.core.masonry.api"

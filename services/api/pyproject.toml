@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "ai-pm-api"
+version = "0.1.0"
+description = "FastAPI service for the ai-pm platform"
+authors = ["ai-pm Platform <dev@example.com>"]
+packages = []
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.110.0"
+uvicorn = { version = "^0.29.0", extras = ["standard"] }
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+
+[build-system]
+requires = ["poetry-core>=1.6.0"]
+build-backend = "poetry.core.masonry.api"
