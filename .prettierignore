@@ -1,0 +1,15 @@
+# Ignore build outputs
+dist
+.next
+out
+coverage
+
+# Node & Python environments
+node_modules
+pnpm-lock.yaml
+.venv
+venv
+
+# Infrastructure manifests
+infra/terraform
+infra/k8s

@@ -1,0 +1,12 @@
+{
+  "name": "ai-pm",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "dev": "turbo run dev --parallel"
+  },
+  "devDependencies": {
+    "turbo": "^1.11.3"
+  }
+}

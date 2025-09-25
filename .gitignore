@@ -1,0 +1,41 @@
+# Node
+node_modules/
+dist/
+.next/
+out/
+coverage/
+
+# Turbo
+.turbo/
+
+# Logs
+logs/
+*.log
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+build/
+venv/
+.venv/
+.mypy_cache/
+.pytest_cache/
+
+# Editors
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
