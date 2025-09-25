@@ -3,15 +3,29 @@ name = "ai-pm-api"
 version = "0.1.0"
 description = "FastAPI service for the ai-pm platform"
 authors = ["ai-pm Platform <dev@example.com>"]
-packages = []
+packages = [{ include = "app" }]
 
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.110.0"
 uvicorn = { version = "^0.29.0", extras = ["standard"] }
+pydantic-settings = "^2.2.1"
+sqlalchemy = "^2.0.27"
+alembic = "^1.13.1"
+asyncpg = "^0.29.0"
+psycopg2-binary = "^2.9.9"
+httpx = "^0.27.0"
+opentelemetry-api = "^1.23.0"
+opentelemetry-sdk = "^1.23.0"
+opentelemetry-instrumentation-fastapi = "^0.44b0"
+opentelemetry-exporter-otlp = "^1.23.0"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0.0"
+pytest = "^8.1.1"
+pytest-asyncio = "^0.23.5"
+
+[tool.poetry.scripts]
+uvicorn = "uvicorn.main:main"
 
 [build-system]
 requires = ["poetry-core>=1.6.0"]
