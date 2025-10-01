@@ -3,9 +3,7 @@ name = "ai-pm-common"
 version = "0.1.0"
 description = "Shared Pydantic models and utilities for ai-pm services"
 authors = ["ai-pm Platform <dev@example.com>"]
-packages = [
-  { include = "ai_pm_common" }
-]
+packages = [{ include = "common" }]
 
 [tool.poetry.dependencies]
 python = "^3.11"

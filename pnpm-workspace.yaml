@@ -1,5 +1,9 @@
 packages:
+  # JavaScript/TypeScript applications
   - "apps/*"
+  # JavaScript packages that live alongside services (Python services are skipped)
   - "services/*"
+  # Shared libraries published as JS packages
   - "libs/js/*"
+  # Local developer tooling packages
   - "tools/*"
