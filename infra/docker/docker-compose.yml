@@ -1,0 +1,182 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    env_file:
+      - ../../ops/.env.example
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ai_pm}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ai-pm
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    env_file:
+      - ../../ops/.env.example
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    networks:
+      - ai-pm
+
+  temporal:
+    image: temporalio/auto-setup:1.22.4
+    restart: unless-stopped
+    env_file:
+      - ../../ops/.env.example
+    environment:
+      DB: ${TEMPORAL_DB_ENGINE:-postgresql}
+      DB_HOST: ${TEMPORAL_DB_HOST:-postgres}
+      DB_PORT: ${TEMPORAL_DB_PORT:-5432}
+      DBNAME: ${TEMPORAL_DB_NAME:-temporal}
+      DB_USER: ${TEMPORAL_DB_USER:-postgres}
+      DB_PASSWORD: ${TEMPORAL_DB_PASSWORD:-postgres}
+      POSTGRES_USER: ${TEMPORAL_DB_USER:-postgres}
+      POSTGRES_PWD: ${TEMPORAL_DB_PASSWORD:-postgres}
+      DYNAMIC_CONFIG_FILE_PATH: /etc/temporal/dynamicconfig/docker.yaml
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${TEMPORAL_GRPC_PORT:-7233}:7233"
+      - "${TEMPORAL_WEB_PORT:-8080}:8080"
+    networks:
+      - ai-pm
+
+  api:
+    build:
+      context: ../../
+      dockerfile: services/api/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ../../ops/.env.example
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://postgres:postgres@postgres:5432/ai_pm}
+      TEMPORAL_NAMESPACE: ${TEMPORAL_NAMESPACE:-default}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      temporal:
+        condition: service_started
+    ports:
+      - "${API_PORT:-8000}:8000"
+    networks:
+      - ai-pm
+
+  worker:
+    build:
+      context: ../../
+      dockerfile: services/worker/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ../../ops/.env.example
+    environment:
+      TEMPORAL_HOST: ${TEMPORAL_HOST:-temporal:7233}
+      TEMPORAL_NAMESPACE: ${TEMPORAL_NAMESPACE:-default}
+    depends_on:
+      temporal:
+        condition: service_started
+    networks:
+      - ai-pm
+
+  web:
+    build:
+      context: ../../
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ../../ops/.env.example
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://api:8000}
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    networks:
+      - ai-pm
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    restart: unless-stopped
+    profiles:
+      - observability
+    env_file:
+      - ../../ops/.env.example
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "6831:6831/udp"
+    networks:
+      - ai-pm
+
+  pgadmin:
+    image: dpage/pgadmin4:8.10
+    restart: unless-stopped
+    profiles:
+      - tooling
+    env_file:
+      - ../../ops/.env.example
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-password}
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - ai-pm
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  tempo:
+    image: grafana/tempo:2.4.1
+    restart: unless-stopped
+    profiles:
+      - observability
+    env_file:
+      - ../../ops/.env.example
+    command: ["tempo", "--config.file=/etc/tempo.yaml"]
+    volumes:
+      - tempo_data:/var/tempo
+      - ./tempo/tempo.yaml:/etc/tempo.yaml:ro
+    ports:
+      - "${TEMPO_HTTP_PORT:-3200}:3200"
+    networks:
+      - ai-pm
+
+  loki:
+    image: grafana/loki:2.9.8
+    restart: unless-stopped
+    profiles:
+      - observability
+    env_file:
+      - ../../ops/.env.example
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    volumes:
+      - loki_data:/loki
+      - ./loki/loki-local-config.yaml:/etc/loki/local-config.yaml:ro
+    ports:
+      - "${LOKI_HTTP_PORT:-3100}:3100"
+    networks:
+      - ai-pm
+
+networks:
+  ai-pm:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  tempo_data:
+  loki_data:

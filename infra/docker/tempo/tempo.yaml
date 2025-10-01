@@ -1,0 +1,49 @@
+server:
+  http_listen_port: 3200
+
+multitenancy_enabled: false
+
+compactor:
+  compaction:
+    compaction_window: 10m
+    max_block_bytes: 1073741824
+    block_retention: 48h
+    compacted_block_retention: 1h
+
+storage:
+  trace:
+    backend: local
+    local:
+      path: /var/tempo/traces
+    wal:
+      path: /var/tempo/wal
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+        http:
+    jaeger:
+      protocols:
+        thrift_http:
+        grpc:
+
+query_frontend:
+  search:
+    query_timeout: 30s
+
+ingester:
+  lifecycler:
+    ring:
+      replication_factor: 1
+
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+
+overrides:
+  defaults:
+    max_traces_per_user: 100000
+    max_bytes_per_trace: 50000000
