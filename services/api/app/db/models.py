@@ -2,15 +2,28 @@
 
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
+from enum import Enum
 from typing import Optional
 
-from sqlalchemy import DateTime, ForeignKey, String, func
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import DateTime, Enum as SAEnum, Float, ForeignKey, String, Text, func
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
     """Base declarative class for ORM models."""
+
+
+class RequirementType(str, Enum):
+    """Requirement classification categories."""
+
+    FEATURE = "feature"
+    BUG = "bug"
+    IMPROVEMENT = "improvement"
+    CONSTRAINT = "constraint"
 
 
 class Organization(Base):
@@ -67,12 +80,58 @@ class Project(Base):
 
     organization: Mapped[Organization] = relationship(back_populates="projects")
     client: Mapped[Optional[Client]] = relationship(back_populates="projects")
+    requirements: Mapped[list["Requirement"]] = relationship(back_populates="project", cascade="all, delete-orphan")
+    conversation_turns: Mapped[list["ConversationTurn"]] = relationship(
+        back_populates="project", cascade="all, delete-orphan"
+    )
+
+
+class Requirement(Base):
+    """A requirement captured for a project and persona."""
+
+    __tablename__ = "requirements"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
+    persona_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("personas.id", ondelete="CASCADE"), nullable=False
+    )
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    type: Mapped[RequirementType] = mapped_column(SAEnum(RequirementType, name="requirement_type"), nullable=False)
+    confidence: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    cluster_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), server_onupdate=func.now(), nullable=False
+    )
+
+    project: Mapped["Project"] = relationship(back_populates="requirements")
+
+
+class ConversationTurn(Base):
+    """A conversation turn captured for analysis."""
+
+    __tablename__ = "conversation_turns"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
+    persona_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("personas.id", ondelete="CASCADE"), nullable=False
+    )
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    embedding: Mapped[list[float]] = mapped_column(Vector(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    project: Mapped["Project"] = relationship(back_populates="conversation_turns")
 
 
 __all__ = [
     "Base",
+    "RequirementType",
     "Organization",
     "User",
     "Client",
     "Project",
+    "Requirement",
+    "ConversationTurn",
 ]
