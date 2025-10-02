@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - "feature/**"
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: Web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9.9.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm --filter @ai-pm/web run lint
+
+      - name: Type check
+        run: pnpm --filter @ai-pm/web exec tsc --noEmit
+
+      - name: Unit tests
+        run: pnpm --filter @ai-pm/web run --if-present test
+
+  python:
+    name: Python (${{ matrix.service }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - service: api
+            type_target: app
+            run_migrations: true
+          - service: worker
+            type_target: worker
+            run_migrations: false
+    defaults:
+      run:
+        working-directory: services/${{ matrix.service }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: poetry
+          cache-dependency-path: services/${{ matrix.service }}/poetry.lock
+
+      - name: Install Poetry
+        run: python -m pip install --upgrade pip poetry==1.8.3
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-root
+
+      - name: Install lint and type-check tooling
+        run: poetry run python -m pip install ruff mypy
+
+      - name: Lint
+        run: poetry run ruff check .
+
+      - name: Type check
+        run: poetry run mypy ${{ matrix.type_target }} --ignore-missing-imports
+
+      - name: Unit tests
+        env:
+          PYTHONWARNINGS: ignore::DeprecationWarning
+        run: poetry run pytest
+
+      - name: Alembic upgrade head
+        if: ${{ matrix.run_migrations }}
+        env:
+          DATABASE_URL: sqlite:///./app.db
+        run: poetry run alembic upgrade head

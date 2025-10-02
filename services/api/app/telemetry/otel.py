@@ -14,6 +14,7 @@ from opentelemetry.sdk.trace.export import (
     BatchSpanProcessor,
     ConsoleSpanExporter,
     SimpleSpanProcessor,
+    SpanProcessor,
 )
 
 if TYPE_CHECKING:
@@ -34,7 +35,7 @@ def configure_telemetry(app: FastAPI, settings: "Settings") -> None:
     if getattr(app.state, _OTEL_CONFIGURED_ATTR, False):
         return
 
-    span_processors = []
+    span_processors: list[SpanProcessor] = []
 
     if settings.otel_exporter_otlp_endpoint:
         span_processors.append(
@@ -59,3 +60,4 @@ def configure_telemetry(app: FastAPI, settings: "Settings") -> None:
 
     FastAPIInstrumentor().instrument_app(app)
     setattr(app.state, _OTEL_CONFIGURED_ATTR, True)
+

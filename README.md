@@ -1,5 +1,7 @@
 # ai-pm Monorepo
 
+[![CI](https://github.com/Tal-Youngster/ai-pm/actions/workflows/ci.yml/badge.svg)](https://github.com/Tal-Youngster/ai-pm/actions/workflows/ci.yml) [![Docker Images](https://github.com/Tal-Youngster/ai-pm/actions/workflows/docker.yml/badge.svg)](https://github.com/Tal-Youngster/ai-pm/actions/workflows/docker.yml)
+
 This repository contains the platform code for the **ai-pm** project. It is organised as a Turborepo powered PNPM workspace for JavaScript/TypeScript applications alongside Poetry managed Python services.
 
 ## Prerequisites

@@ -12,6 +12,7 @@ from opentelemetry.sdk.trace.export import (
     BatchSpanProcessor,
     ConsoleSpanExporter,
     SimpleSpanProcessor,
+    SpanProcessor,
 )
 
 if TYPE_CHECKING:
@@ -34,7 +35,7 @@ def configure_telemetry(settings: "Settings") -> None:
     if _CONFIGURED:
         return
 
-    span_processors = []
+    span_processors: list[SpanProcessor] = []
 
     if settings.otel_exporter_otlp_endpoint:
         span_processors.append(
@@ -59,3 +60,4 @@ def configure_telemetry(settings: "Settings") -> None:
 
     trace.set_tracer_provider(provider)
     _CONFIGURED = True
+
