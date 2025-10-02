@@ -99,6 +99,11 @@ export interface IntakeExtractPayload {
   text: string;
 }
 
+export interface UpdateRequirementPayload {
+  type?: RequirementType;
+  confidence?: number | null;
+}
+
 type JsonRecord = Record<string, unknown>;
 
 type RequestOptions = RequestInit & { cache?: RequestCache };
@@ -371,6 +376,26 @@ export async function extractRequirements(
   });
 
   return response.map((requirement) => normalizeRequirement(requirement));
+}
+
+export async function updateRequirement(
+  requirementId: string,
+  payload: UpdateRequirementPayload
+): Promise<Requirement> {
+  const body = removeUndefined({
+    type: payload.type,
+    confidence: payload.confidence
+  });
+
+  const response = await requestJson<JsonRecord>(`/v1/requirements/${requirementId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
+
+  return normalizeRequirement(response);
 }
 
 

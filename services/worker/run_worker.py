@@ -1,4 +1,4 @@
-"""Entry point for running the Temporal worker."""
+﻿"""Entry point for running the Temporal worker."""
 
 from __future__ import annotations
 
@@ -8,10 +8,10 @@ import logging
 from temporalio.client import Client
 from temporalio.worker import Worker
 
-from worker.activities import echo_activity
+from worker.activities import echo_activity, process_intake_activity
 from worker.settings import settings
 from worker.telemetry import configure_telemetry
-from worker.workflows import EchoWorkflow
+from worker.workflows import EchoWorkflow, IntakeWorkflow
 
 TASK_QUEUE = "ai-pm-default"
 
@@ -25,8 +25,8 @@ async def main() -> None:
     worker = Worker(
         client,
         task_queue=TASK_QUEUE,
-        workflows=[EchoWorkflow],
-        activities=[echo_activity],
+        workflows=[EchoWorkflow, IntakeWorkflow],
+        activities=[echo_activity, process_intake_activity],
     )
 
     logging.info("Starting worker on task queue '%s'", TASK_QUEUE)
