@@ -75,24 +75,24 @@ jobs:
           installer-parallel: true
 
       - name: Install dependencies
-        run: poetry install --no-interaction --no-root
+        run: python -m poetry install --no-interaction --no-root
 
       - name: Install lint and type-check tooling
-        run: poetry run python -m pip install ruff mypy
+        run: python -m poetry run python -m pip install ruff mypy
 
       - name: Lint
-        run: poetry run ruff check .
+        run: python -m poetry run ruff check .
 
       - name: Type check
-        run: poetry run mypy ${{ matrix.type_target }} --ignore-missing-imports
+        run: python -m poetry run mypy ${{ matrix.type_target }} --ignore-missing-imports
 
       - name: Unit tests
         env:
           PYTHONWARNINGS: ignore::DeprecationWarning
-        run: poetry run pytest
+        run: python -m poetry run pytest
 
       - name: Alembic upgrade head
         if: ${{ matrix.run_migrations }}
         env:
           DATABASE_URL: sqlite:///./app.db
-        run: poetry run alembic upgrade head
+        run: python -m poetry run alembic upgrade head
