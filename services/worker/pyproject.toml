@@ -11,6 +11,7 @@ temporalio = "^1.7.0"
 pydantic-settings = "^2.5.2"
 opentelemetry-api = "^1.28.2"
 opentelemetry-sdk = "^1.28.2"
+opentelemetry-exporter-otlp = "^1.28.2"
 ai-pm-common = { path = "../../libs/py/common", develop = true }
 
 [tool.poetry.group.dev.dependencies]

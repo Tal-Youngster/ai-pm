@@ -1,13 +1,11 @@
-"""OpenTelemetry integration helpers."""
+"""OpenTelemetry configuration for the Temporal worker."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from fastapi import FastAPI
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import (
@@ -18,9 +16,9 @@ from opentelemetry.sdk.trace.export import (
 )
 
 if TYPE_CHECKING:
-    from app.config import Settings
+    from worker.settings import Settings
 
-_OTEL_CONFIGURED_ATTR = "_otel_configured"
+_CONFIGURED = False
 
 
 def _should_use_console(settings: "Settings") -> bool:
@@ -29,10 +27,12 @@ def _should_use_console(settings: "Settings") -> bool:
     return settings.environment.lower() == "development"
 
 
-def configure_telemetry(app: FastAPI, settings: "Settings") -> None:
-    """Configure OpenTelemetry exporters and instrumentation."""
+def configure_telemetry(settings: "Settings") -> None:
+    """Initialise OpenTelemetry exporters for the worker process."""
 
-    if getattr(app.state, _OTEL_CONFIGURED_ATTR, False):
+    global _CONFIGURED
+
+    if _CONFIGURED:
         return
 
     span_processors: list[SpanProcessor] = []
@@ -48,16 +48,16 @@ def configure_telemetry(app: FastAPI, settings: "Settings") -> None:
         span_processors.append(SimpleSpanProcessor(ConsoleSpanExporter()))
 
     if not span_processors:
+        _CONFIGURED = True
         return
 
-    resource = Resource.create({"service.name": "ai-pm-api"})
-    provider = TracerProvider(resource=resource)
+    provider = TracerProvider(
+        resource=Resource.create({"service.name": "ai-pm-worker"})
+    )
 
     for processor in span_processors:
         provider.add_span_processor(processor)
 
     trace.set_tracer_provider(provider)
-
-    FastAPIInstrumentor().instrument_app(app)
-    setattr(app.state, _OTEL_CONFIGURED_ATTR, True)
+    _CONFIGURED = True
 

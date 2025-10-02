@@ -14,11 +14,13 @@ sqlalchemy = "^2.0.27"
 alembic = "^1.13.1"
 asyncpg = "^0.29.0"
 psycopg2-binary = "^2.9.9"
+pgvector = "^0.2.4"
 httpx = "^0.27.0"
 opentelemetry-api = "^1.23.0"
 opentelemetry-sdk = "^1.23.0"
 opentelemetry-instrumentation-fastapi = "^0.44b0"
 opentelemetry-exporter-otlp = "^1.23.0"
+prometheus-fastapi-instrumentator = "^6.0.0"
 ai-pm-common = { path = "../../libs/py/common", develop = true }
 
 [tool.poetry.group.dev.dependencies]

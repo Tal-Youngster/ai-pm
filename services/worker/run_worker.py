@@ -10,6 +10,7 @@ from temporalio.worker import Worker
 
 from worker.activities import echo_activity
 from worker.settings import settings
+from worker.telemetry import configure_telemetry
 from worker.workflows import EchoWorkflow
 
 TASK_QUEUE = "ai-pm-default"
@@ -18,6 +19,7 @@ TASK_QUEUE = "ai-pm-default"
 async def main() -> None:
     """Start the Temporal worker."""
 
+    configure_telemetry(settings)
     client = await Client.connect(settings.host, namespace=settings.namespace)
 
     worker = Worker(
