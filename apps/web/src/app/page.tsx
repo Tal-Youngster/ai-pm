@@ -37,6 +37,9 @@ export default async function Page() {
           <Button asChild>
             <Link href="/health">View Health Status</Link>
           </Button>
+          <Button asChild>
+            <Link href="/projects">Explore Projects</Link>
+          </Button>
           <Button asChild disabled={!canAccessConsole} variant={canAccessConsole ? "default" : "secondary"}>
             <Link href={canAccessConsole ? "/console" : "#"}>
               {canAccessConsole ? "Open Console" : "Console requires admin or lead role"}

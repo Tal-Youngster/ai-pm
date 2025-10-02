@@ -11,7 +11,7 @@ from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from app.db.base import get_session
-from app.db.models import Project, Requirement, RequirementType
+from app.db.models import Persona, Project, Requirement, RequirementType
 
 router = APIRouter(prefix="/requirements", tags=["requirements"])
 
@@ -62,11 +62,7 @@ def _ensure_project_exists(session: Session, project_id: int) -> None:
 
 
 def _ensure_persona_exists(session: Session, persona_id: UUID) -> None:
-    persona_exists = session.execute(
-        text("SELECT 1 FROM personas WHERE id = :persona_id LIMIT 1"),
-        {"persona_id": str(persona_id)},
-    ).scalar()
-    if persona_exists is None:
+    if session.get(Persona, persona_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Persona not found")
 
 

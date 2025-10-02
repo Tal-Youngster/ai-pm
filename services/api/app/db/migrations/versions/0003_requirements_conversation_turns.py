@@ -1,4 +1,4 @@
-"""Add requirements and conversation_turns tables."""
+﻿"""Add requirements and conversation_turns tables."""
 
 from __future__ import annotations
 
@@ -8,8 +8,8 @@ from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects import postgresql
 
 
-revision = "0002_requirements"
-down_revision = "0001_initial"
+revision = "0003_requirements_conversation_turns"
+down_revision = "0002_personas"
 branch_labels = None
 depends_on = None
 
