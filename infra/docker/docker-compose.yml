@@ -39,6 +39,7 @@ services:
     environment:
       DB: ${TEMPORAL_DB_ENGINE:-postgresql}
       DB_HOST: ${TEMPORAL_DB_HOST:-postgres}
+      POSTGRES_SEEDS: ${TEMPORAL_DB_HOST:-postgres}
       DB_PORT: ${TEMPORAL_DB_PORT:-5432}
       DBNAME: ${TEMPORAL_DB_NAME:-temporal}
       DB_USER: ${TEMPORAL_DB_USER:-postgres}
@@ -46,6 +47,8 @@ services:
       POSTGRES_USER: ${TEMPORAL_DB_USER:-postgres}
       POSTGRES_PWD: ${TEMPORAL_DB_PASSWORD:-postgres}
       DYNAMIC_CONFIG_FILE_PATH: /etc/temporal/dynamicconfig/docker.yaml
+    volumes:
+      - ./temporal/dynamicconfig:/etc/temporal/dynamicconfig:ro
     depends_on:
       postgres:
         condition: service_healthy

@@ -9,8 +9,18 @@ from app.config import Settings
 
 _settings = Settings()
 
-engine = create_engine(_settings.database_url, future=True)
-SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
+engine = create_engine(
+    _settings.database_url,
+    future=True,
+    pool_pre_ping=True,
+)
+SessionLocal = sessionmaker(
+    bind=engine,
+    autoflush=False,
+    autocommit=False,
+    expire_on_commit=False,
+    future=True,
+)
 
 
 def get_session() -> Iterator[Session]:
@@ -22,4 +32,4 @@ def get_session() -> Iterator[Session]:
         db.close()
 
 
-__all__ = ["engine", "SessionLocal", "get_session"]
+__all__ = ['engine', 'SessionLocal', 'get_session']

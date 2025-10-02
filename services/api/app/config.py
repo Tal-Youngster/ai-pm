@@ -17,5 +17,16 @@ class Settings(BaseSettings):
         alias="OTEL_EXPORTER_OTLP_ENDPOINT",
         description="Endpoint for OTLP trace exporter.",
     )
+    environment: str = Field(
+        default="development",
+        alias="ENVIRONMENT",
+        description="Deployment environment name.",
+    )
+    cors_allow_origins: list[str] = Field(
+        default_factory=lambda: ["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000"],
+        alias="CORS_ALLOW_ORIGINS",
+        description="Allowed origins for CORS requests.",
+    )
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+
